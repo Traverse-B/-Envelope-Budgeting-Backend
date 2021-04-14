@@ -1,0 +1,14 @@
+{
+  "name": "envelope",
+  "version": "1.0.0",
+  "description": "A website backend",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "Brian Batcheldor",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1"
+  }
+}
