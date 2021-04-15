@@ -1,4 +1,6 @@
-
+// **************************
+//     Happy Path Testing
+// **************************
 ###
 
 // initialize database
@@ -17,7 +19,7 @@ Content-Type: application/json
     "userID": "IAmUser",
     "secret": "Password",
     "pay": 2000,
-    "payday": "date",
+    "payday": "5/4/2020",
     "frequency": 7
 }
 
@@ -136,3 +138,136 @@ Content-Type: application/json
 {
     "amount": 200
 }
+
+###
+
+// **************************
+//     Sad Path Testing: Incorrect or missing data
+// **************************
+
+// User post request with string replaced with number returns 400
+POST http://localhost:3000/user HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "Brian",
+    "lastName": "Batcheldor",
+    "email": "smo@boosh.com",
+    "userID": 9,
+    "secret": "Password",
+    "pay": 2000,
+    "payday": "date",
+    "frequency": 7
+}
+
+###
+
+// User post with missing data returns 400
+POST http://localhost:3000/user HTTP/1.1
+Content-Type: application/json
+
+{
+    "firstName": "Bethany",
+    "lastName": "Borgemenke",
+    "email": "hotgirl@boosh.com",
+    "userID": "",
+    "secret": "Password",
+    "pay": 3000,
+    "payday": "date",
+    "frequency": 14
+}
+
+###
+
+// User update with missing info returns 400
+PUT http://localhost:3000/user/IAmUser HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "",
+    "info": "Scotty"
+}
+
+###
+
+// Envelope post with missing info returns 400
+POST http://localhost:3000/user/IAmUser/envelopes HTTP/1.1
+Content-Type: application/json
+
+{
+    "category": "",
+    "deposit": 200
+}
+
+###
+
+// Envelope post with string instead of number returns 400
+POST http://localhost:3000/user/IAmUser/envelopes HTTP/1.1
+Content-Type: application/json
+
+{
+    "category": "Piss",
+    "deposit": "200"
+}
+
+###
+
+// update envelope with bad or missing type/info returns 400
+PUT http://localhost:3000/user/IAmUser/envelopes/1 HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "category",
+    "info": "f"
+}
+
+// **************************
+//     Sad Path Testing: Invalid user or envelope references
+// **************************
+
+// get user by bad ID returns 404
+GET http://localhost:3000/user/IAUsr HTTP/1.1
+Content-Type: application/json
+
+###
+
+// update a user by bad ID returns 404
+
+PUT http://localhost:3000/user/IUser HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "lastName",
+    "info": "Scotty"
+}
+
+###
+
+// delete a user by bad ID returns 404
+DELETE  http://localhost:3000/user/Poo HTTP/1.1
+Content-Type: application/json
+
+###
+
+// get envelope by bad id returns 404
+GET http://localhost:3000/user/IAmUser/envelopes/7 HTTP/1.1
+Content-Type: application/json
+
+###
+
+// update envelope by bad id returns 404
+PUT http://localhost:3000/user/IAmUser/envelopes/3 HTTP/1.1
+Content-Type: application/json
+
+{
+    "type": "category",
+    "info": "Groceries"
+}
+
+###
+
+// delete envelope by bad id returns 404
+DELETE http://localhost:3000/user/IAmUser/envelopes/5 HTTP/1.1
+Content-Type: application/json
+
+###

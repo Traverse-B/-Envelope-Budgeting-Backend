@@ -2,20 +2,26 @@ const express = require('express');
 const userRouter = express.Router();
 const db = require('./db');
 const envelopeRouter = require('./envelopes');
-// Open Database
-db.initialize(); 
 
-// Clear Database
+/*
+    The user router handles all routes related to website user accounts,
+    including creating, updating & deleting user accounts.  User
+    accounts also contain the budgeting "envelope" objects that are the 
+    focus of this website.  Routes involving user envelopes are passed to
+    the envelope router.
+*/
+
+// Clear Database (Mostly for testing purposes)
 userRouter.delete('/all', (req, res, next) => {
     const ready = db.resetDB();
     if (ready) {
         res.send();
     } else {
-        res.status(400).send();
+        res.status(500).send();
     }
 })
 
-// Get parameters
+// Retrieve user information or return 404
 userRouter.param('userID', (req, res, next, id) => {
     const user = db.getUserByUserID(id);
     if (user) {
@@ -51,20 +57,22 @@ userRouter.post('/', (req, res, next) => {
     if (user) {
         res.status(201).send(user);
     } else {
-        res.status(404).send();
+        res.status(400).send();
     }
 });
 
+// Update user by ID
 userRouter.put('/:userID', (req, res, next) => {
     user = req.user;
     const updated = user.updateUser(req.body.type, req.body.info);
     if (updated) {
         res.status(201).send(user);
     } else {
-        res.status(404).send();
+        res.status(400).send();
     }
 });
 
+// Delete user by ID
 userRouter.delete('/:userID', (req, res, next) => {
     deleted = db.deleteUser(req.user.userID);
     if (deleted) {
@@ -74,7 +82,7 @@ userRouter.delete('/:userID', (req, res, next) => {
     }
 });
 
-
+// Pass envelope routes to envelopeRouter
 userRouter.use('/:userID/envelopes', envelopeRouter);
 
 module.exports = userRouter;

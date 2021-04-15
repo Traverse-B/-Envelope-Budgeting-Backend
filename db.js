@@ -1,3 +1,27 @@
+// *************************************************************************//
+//      Persistent Database for the Personal Budgeting Website              //
+// *************************************************************************//
+
+/*  This module contains the database object (db) that contains the array of
+    website users (and the class definition that creates User objects)  
+    as well as methods to create, retrieve, update and delete user objects.
+    
+    The user objects themselves contain methods to create, retrieve, update and
+    delete the "envelopes" that contain budgeting information. Thus, any number
+    of users can be assigned to this website, each with their own set of 
+    budgeting "envelopes".
+
+    The db is set up with a method to save the state of the user array to the 
+    associated users.json file, which persists even when the server is down.  
+    All changes to the array or the objects it contains are automatically saved
+    using this method.  Opening the server initializes the database, retrieving
+    the user array and creating the required user objects, returning it to its
+    previous state.
+
+    The database can be reset (for testing purposes) using the db.resetDB
+    method.
+*/
+
 class User {
 
     constructor(firstName, lastName, email, userID, secret, pay, payday, frequency) {
@@ -176,19 +200,17 @@ const db = {
         })
     },
     
-    save: function() {
-        const saved = fs.writeFileSync('users.json', JSON.stringify(this.users), err => {
-            if (err) return false;
+    save: async function() {
+        const saved = await fs.writeFile('users.json', JSON.stringify(this.users), err => {
+            if (err) throw err;
             return true;
         })
         return true;
     },
 
     resetDB: function() {
-        console.log('Reseting Database...')
         this.users = [];
         const saved = this.save();
-        this.initialize();
         return saved;
     },
 
@@ -202,17 +224,18 @@ const db = {
     },
 
     createUser: function(firstName, lastName, email, userID, secret, pay, payday, frequency) {
+        console.log(this.users)
         if (this.getUserByUserID(userID)) return false;
         if (typeof firstName !== 'string' || firstName.length === 0) return false;
         if (typeof lastName !== 'string' || lastName.length === 0) return false;
         if (!email.match(/(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])/)) {
             return false;
         }
-        if (typeof userID !== 'string') return false;
-        if (typeof secret !== 'string') return false;
-        if (typeof pay !== 'number') return false;
-        if (typeof payday !== 'string') return false; // Change to <-- (typeof payday.getMonth !== 'function')
-        if (typeof frequency !== 'number') return false;
+        if (typeof userID !== 'string' || userID.length === 0) return false;
+        if (typeof secret !== 'string' || userID.length === 0) return false;
+        if (typeof pay !== 'number' || pay <= 0) return false;
+        if (typeof payday !== 'string') return false;
+        if (typeof frequency !== 'number' || frequency <= 0) return false;
         const newUser = new User(firstName, lastName, email, userID, secret, pay, payday, frequency);
         this.users.push(newUser);
         saved = this.save();

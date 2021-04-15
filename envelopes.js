@@ -2,8 +2,13 @@ const express = require('express');
 const envelopeRouter = express.Router();
 const db = require('./db');
 
+/*
+    The Envelope Router handles all routes related to creating, retrieving,
+    updating, and deleting the budgeting "envelopes" that are the core 
+    functionality of this site.  
+*/
 
-// Get params
+// Retrieve envelope information or return 404
 envelopeRouter.param('ID', (req, res, next, id) => {
     id = Number(id)
     if (typeof id !== 'number') {
@@ -20,22 +25,22 @@ envelopeRouter.param('ID', (req, res, next, id) => {
 })
 
 
-// Validate data
+// Validate data (for post route)
 function validateData(req, res, next) {
     let category = req.body.category;
     let deposit = req.body.deposit;
     // if data is invalid type or not present
     if (typeof req.body.category !== 'string' || typeof req.body.deposit !== 'number') {
-        res.sendStatus(404);
+        res.sendStatus(400);
     // If data is a blank string
     } else if (req.body.category.length === 0) {
-        res.sendStatus(404);
+        res.sendStatus(400);
     // if data includes script marker    
     } else if (req.body.category.match(/(<script>)/i)) {
-        res.sendStatus(404);
+        res.sendStatus(400);
     // if category already exsists
     } else if (req.user.getEnvelopeByCategory(req.body.category)) {
-        res.status(404).send("Category already exsists");
+        res.status(409).send("Category already exsists");
     // Looks good!
     } else {
         next();
@@ -50,12 +55,11 @@ envelopeRouter.get('/', (req, res, next) => {
 
 // Create an envelope
 envelopeRouter.post('/', validateData, (req, res, next) => {
-    console.log('ping')
     let newEnvelope = req.user.createEnvelope(req.body.category, req.body.deposit);
     if (newEnvelope) {
         res.status(201).send(newEnvelope);
     } else {
-        res.sendStatus(404);
+        res.sendStatus(400);
     }
 })
 
@@ -68,7 +72,7 @@ envelopeRouter.get('/:ID', (req, res, next) => {
 envelopeRouter.put('/:ID', (req, res, next) => {
     const updated = req.user.updateEnvelope(req.envelope.id, req.body.type, req.body.info);
     if (updated) {
-        res.status(204).send(updated);
+        res.status(201).send(updated);
     } else {
         res.status(400).send();
     }
